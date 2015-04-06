@@ -1,0 +1,29 @@
+$(eval $(call implement,     test, lib/libgenerated.a, dep1))
+$(eval $(call implement_abs, test, $(m.in/cwd)lib/libstatic.a))
+$(eval $(call provide,       test, if/static, dep2))
+$(eval $(call provide_abs,   test, $(m.in/cbd)if/generated))
+
+$(eval $(call implement,     dep1, lib/dep1/libgenerated.a, dep3))
+$(eval $(call implement_abs, dep1, $(m.in/cwd)lib/dep1/libstatic.a))
+$(eval $(call provide,       dep1, dep1/if/static))
+$(eval $(call provide_abs,   dep1, $(m.in/cbd)dep1/if/generated))
+
+$(eval $(call implement,     dep2, lib/dep2/libgenerated.a))
+$(eval $(call implement_abs, dep2, $(m.in/cwd)lib/dep2/libstatic.a))
+$(eval $(call provide,       dep2, dep2/if/static, dep4))
+$(eval $(call provide_abs,   dep2, $(m.in/cbd)dep2/if/generated))
+
+$(eval $(call implement,     dep3, lib/dep3/libgenerated.a))
+$(eval $(call implement_abs, dep3, $(m.in/cwd)lib/dep3/libstatic.a))
+$(eval $(call provide,       dep3, dep3/if/static))
+$(eval $(call provide_abs,   dep3, $(m.in/cbd)dep3/if/generated))
+
+$(eval $(call implement,     dep4, lib/dep4/libgenerated.a), dep5)
+$(eval $(call implement_abs, dep4, $(m.in/cwd)lib/dep4/libstatic.a))
+$(eval $(call provide,       dep4, dep4/if/static, dep5))
+$(eval $(call provide_abs,   dep4, $(m.in/cbd)dep4/if/generated))
+
+$(eval $(call implement,     dep5, lib/dep5/libgenerated.a))
+$(eval $(call implement_abs, dep5, $(m.in/cwd)lib/dep5/libstatic.a))
+$(eval $(call provide,       dep5, dep5/if/static))
+$(eval $(call provide_abs,   dep5, $(m.in/cbd)dep5/if/generated))

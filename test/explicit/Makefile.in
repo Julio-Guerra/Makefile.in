@@ -1,0 +1,38 @@
+#-
+#- Explicit definition of dependencies.
+#- This is the lowest level interface of Makefile.in on top of which every other
+#- instrucitons are constructed.
+#- This mode allows one to express every dependencies, prerequisites, rules or
+#- toolchains to be used.
+#-
+
+# use gcc driver to link
+m.in/toolchain/gnu/program/ld := gcc
+
+# global CFLAGS
+m.in/toolchain/gnu/cflags     := -O3 -Wall -Wextra
+
+#
+$(eval $(call make,object,hello.o,-nostdlib -static))
+$(eval $(call include,src))
+
+# explicit target creation for `hello.elf`
+# this is the richest form of target creation: it allows choosing the toolchain
+# (here empty empty to use the default one defined in m.in/toolchain) and the
+# recipe (here `*/link`).
+# Next arguments are rule-specific. We know here the default toolchain is `gnu`
+# and that its `*/link` has a first custom argument for additional the linker
+# flags.
+$(eval $(call make_explicit,hello.elf,,*/link,-static -Xlinker -Map=hello.map))
+# previous command generates hello.map unmanaged by the framework which must
+# be removed when cleaning.
+m.in/clean += hello.map
+
+# `hello.elf` depends on `hello.o` which is a prerequisite of `hello.elf`
+# `hello.o` must be generated contrary to a simple dependency which would only
+# invalidate the target `hello.elf` when modified.
+$(eval $(call prereq,hello.o))
+
+# `hello.elf` is a prerequisite of `hello.bin`.
+$(eval $(call make_implicit,hello.bin))
+$(eval $(call prereq,hello.elf))

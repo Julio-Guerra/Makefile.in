@@ -1,0 +1,14 @@
+ifdef OUTSIDE_FILE
+$(eval $(call include_abs,$(CWD)ok.mk))
+$(eval $(call include,src/ok.mk))
+$(eval $(call include_abs,$(OUTSIDE_FILE)))
+endif
+
+.PHONY: mkdir-ko
+mkdir-ko:
+	$(call m.in/mkdir,/tmp/fail)
+
+.PHONY: mkdir-ok
+mkdir-ok:
+	$(call m.in/mkdir,$(CBD)ok)
+	rm -rf $(CBD)ok
