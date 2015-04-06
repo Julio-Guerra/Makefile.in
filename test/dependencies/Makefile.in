@@ -1,0 +1,41 @@
+#-
+#- Component-Oriented Source Tree
+#- Abstract the internal organization of the source tree by defining components
+#- and simply ask for their implementation or interface without knowing where
+#- they are.
+#- Public/private interfaces can be expressed by requiring them at the right
+#- location of the source tree. I.e. requiring an interface in the root
+#- Makefile.in makes it available and thus public to the entiere sub-tree.
+#-
+
+m.in/toolchain := test
+
+m.in/toolchain/gnu/program/ld := gcc
+
+# global CFLAGS
+m.in/toolchain/gnu/cflags     := -O3 -Wall -Wextra -Werror -nostdinc
+m.in/toolchain/gnu/ldflags    := -nostdlib
+
+# not using implicit (i.e. extension-based %.elf) rule, but an explicit one
+# with transaction-based controls and custom options
+$(eval $(call make, elf, hello, -static -Xlinker -Map=hello.map))
+
+# previous command generates hello.map unmanaged by the framework to be cleaned up
+m.in/clean += hello.map
+
+$(eval $(call include, src))
+
+# require `printer`'s interface (i.e. pull its interface)
+# printer's interface is here  globally accessible
+$(eval $(call require, printer, $(FORMAT)))
+
+$(eval $(call add, src/main.c))
+
+# link against component `printer` (i.e. pull its implementation)
+$(eval $(call link, printer, $(FORMAT)))
+
+# implicit-based target
+$(eval $(call make_implicit, hello.bin))
+$(eval $(call prereq, hello))
+
+$(eval $(call include, Library.in))

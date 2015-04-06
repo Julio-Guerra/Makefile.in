@@ -1,0 +1,13 @@
+TESTDIR := test
+SHELL   := bash
+SUITES  := $(shell find $(TESTDIR) -mindepth 1 -maxdepth 1 -type d | sed 's|test/||')
+BATS    := $(shell readlink -f $(CWD)lib/bats/bin/bats)
+
+.PHONY: test
+.SECONDEXPANSION: test
+test: $$(patsubst %,$$@-%,$(SUITES))
+
+.PHONY: test-%
+test-%:
+	+@echo '$(call m.in/term/vfx/info, $*)'
+	+@$(BATS) $(TESTDIR)/$*/test.bats

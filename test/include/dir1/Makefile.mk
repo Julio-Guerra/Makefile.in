@@ -1,0 +1,7 @@
+$(info 1:$(CBD))
+$(eval $(call include,dir2))
+$(info 1:$(CBD))
+$(eval $(call include,dir4/Makefile.mk))
+$(info 1:$(CBD))
+$(eval $(call include_abs,$(OUTSIDE_FILE)))
+$(info 1:$(CBD))

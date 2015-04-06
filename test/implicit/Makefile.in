@@ -1,0 +1,14 @@
+# use gcc driver to link
+m.in/toolchain/gnu/program/ld := gcc
+# global LDFLAGS (knowing $(LD) is gcc)
+m.in/toolchain/gnu/ldflags    := -Xlinker -Map=hello.map
+# previous option generates a file to be cleaned up
+m.in/clean += hello.map
+# global CFLAGS
+m.in/toolchain/gnu/cflags     := -O3 -Wall -Wextra
+
+$(eval $(call make_implicit,hello.elf))
+$(eval $(call include,src))
+
+$(eval $(call make_implicit,hello.bin))
+$(eval $(call prereq,hello.elf))

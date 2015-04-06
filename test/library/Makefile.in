@@ -1,0 +1,9 @@
+-include test.mk
+
+m.in/toolchain := test
+
+$(eval $(call make, transaction, hello))
+$(eval $(call link,    test))
+$(eval $(call require, test))
+
+$(eval $(call include, Library.in))

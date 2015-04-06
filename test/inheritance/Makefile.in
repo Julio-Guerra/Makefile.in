@@ -1,0 +1,19 @@
+#
+# Transaction Inerithance aka Interface Tree.
+# A transaction inherits from its parent transaction.
+#
+
+m.in/toolchain := test
+
+# root transaction: nothing to inherit from.
+$(eval $(call make, transaction, impl1))
+
+$(eval $(call include, dir1))
+
+# out-of-order test
+# sub-transactions will inherit from this
+$(eval $(call require, , c/if1 c/if2))
+$(eval $(call require, , c/if3))
+
+# root transaction sibling of impl1: nothing to inherit from.
+$(eval $(call make, transaction, impl2))

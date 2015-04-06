@@ -1,0 +1,18 @@
+$(eval $(call m.in/list/add, mylist, 1 2 3))
+$(eval $(call m.in/list/add, mylist, t1_1 t1_2, t1))
+$(eval $(call m.in/list/add, mylist, 4 5))
+$(eval $(call m.in/list/add, mylist, t1_3 t1_4, t1))
+$(eval $(call m.in/list/add, mylist, t2_1, t2))
+
+# arg evaluation of test coming later
+$(eval $(call m.in/list/add, mylist, $$(test), t1))
+
+$(info mylist=$(call m.in/list, mylist))
+$(info mylist/value=$(call m.in/list/value, mylist))
+$(info mylist/t1=$(call m.in/list, mylist, t1))
+test = ok
+$(info mylist/t1=$(call m.in/list, mylist, t1))
+$(info mylist/t2=$(call m.in/list, mylist, t2))
+
+$(eval $(call m.in/list/flush, mylist))
+$(info flushed: $(call m.in/list, mylist))

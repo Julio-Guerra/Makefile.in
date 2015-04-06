@@ -1,0 +1,32 @@
+#
+# GNU Makefile implementation behaviours we rely on to properly work.
+#
+
+e1 = x
+e2 = y
+e3 = z
+list += $(e1)
+list += $(e2)
+list += $(e3)
+e1 = a
+e2 = b
+e3 = c
+
+.PHONY: plusequal
+plusequal:
+	echo $(list)
+
+.PHONY: abspath
+abspath:
+	echo $(abspath test)
+
+.PHONY: dir
+dir:
+	echo $(dir test)
+
+test_arg_fwd  = $(test_arg_fwd_)
+test_arg_fwd_ = $1
+
+.PHONY: arg-fwd
+arg-fwd:
+	echo $(call test_arg_fwd,test)

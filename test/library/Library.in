@@ -1,0 +1,5 @@
+$(eval $(call implement, test, lib/libgenerated.a))
+$(eval $(call implement_abs, test, $(m.in/cwd)lib/libstatic.a))
+
+$(eval $(call provide, test, if/static))
+$(eval $(call provide_abs, test, $(m.in/cbd)if/generated))

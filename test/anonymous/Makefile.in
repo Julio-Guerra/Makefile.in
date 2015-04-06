@@ -1,0 +1,47 @@
+m.in/toolchain/gnu/program/ld := ld
+m.in/toolchain/gnu/cflags     := -m32 -O3 -Wall -Wextra
+m.in/toolchain/gnu/ldflags    := -melf_i386 --fatal-warnings
+stdinc                        := $(m.in/toolchain/gnu/stdinc)
+m.in/toolchain/gnu/cflags     += -nostdinc
+m.in/toolchain/gnu/ldflags    += -nostdlib
+
+# not using implicit (i.e. extension-based %.elf) rule, but an explicit one
+# with transaction-based controls and custom options
+$(eval $(call make,elf,hello,-static -Map=hello.map))
+
+# previous command generates hello.map unmanaged by the framework to be cleaned up
+m.in/clean += hello.map
+
+$(eval $(call link_abs_head,,$(call m.in/toolchain/gnu/locate,crt1.o)       \
+                             $(call m.in/toolchain/gnu/locate,crti.o)       \
+                             $(call m.in/toolchain/gnu/locate,crtbeginT.o)))
+
+# component `crtend`: no interface; a set of object files.
+# To be linked last.
+$(eval $(call link_abs_tail,,$(call m.in/toolchain/gnu/locate,libc.a)       \
+                             $(call m.in/toolchain/gnu/locate,libgcc.a)     \
+                             $(call m.in/toolchain/gnu/locate,libgcc_eh.a)  \
+                             $(call m.in/toolchain/gnu/locate,libc.a)       \
+                             $(call m.in/toolchain/gnu/locate,crtend.o)     \
+                             $(call m.in/toolchain/gnu/locate,crtn.o)))
+
+$(eval $(call require_abs, , $(stdinc)))
+
+# require `printer`'s interface (i.e. pull its interface)
+# printer's interface is here  globally accessible
+$(eval $(call require, , src/printer/include))
+
+$(eval $(call add,src/main.c))
+
+$(eval $(call include,src))
+
+# link against component `printer` (i.e. pull its implementation)
+# By default, link assumes paths relative to the project directory while
+# in this case we want to link against a library beeing generated; thus
+# in the build directory. Hence using `link_abs` to be able to freely prefix
+# the library as we want.
+$(eval $(call link_abs, , $(CBD)src/printer/libprinter.a))
+
+# implicit-based target
+$(eval $(call make_implicit,hello.bin))
+$(eval $(call prereq,hello))

@@ -1,0 +1,28 @@
+foo = $(foo_$(m.in/argc))
+
+foo_0  = $(info $(m.in/argv/1))
+foo_1  = $(info $(m.in/argv/1))
+foo_2  = $(info $(m.in/argv/2))
+foo_3  = $(info $(m.in/argv/3))
+foo_4  = $(info $(m.in/argv/4))
+foo_5  = $(info $(m.in/argv/5))
+foo_6  = $(info $(m.in/argv/6))
+foo_7  = $(info $(m.in/argv/7))
+foo_8  = $(info $(m.in/argv/8))
+foo_9  = $(info $(m.in/argv/9))
+foo_10 = $(info $(m.in/argv/10))
+
+$(call foo, one, )
+$(call foo, one, two)
+$(call foo, one, two, three)
+$(call foo, one, two, three, four)
+$(call foo, one, two, three, four, five)
+$(call foo, one, two, three, four, five, six)
+$(call foo, one, two, three, four, five, six, seven)
+$(call foo, one, two, three, four, five, six, seven, eight)
+$(call foo, one, two, three, four, five, six, seven, eight, nine)
+$(call foo, one, two, three, four, five, six, seven, eight, nine, ten)
+
+.PHONY: ko
+ko:
+	$(foo)
