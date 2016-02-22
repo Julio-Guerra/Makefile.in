@@ -1,0 +1,42 @@
+define recipe1 =
+  echo $1
+  echo $2
+  echo $@
+endef
+
+recipe2 = echo $@
+
+define recipe3 =
+  echo l1
+  echo l2
+  echo l3
+  echo l4
+  echo l5
+  echo l6
+endef
+
+define proxy_target =
+echo 'dummy proxying ... '
+endef
+
+define proxy_recipe =
+echo 'dummy transparent proxying ... $$@'
+cat -
+endef
+
+$(eval $(call m.in/proxy/target, $(proxy_target), proxy\:))
+$(eval $(call m.in/proxy/recipe, $(proxy_recipe), recipe1))
+$(eval $(call m.in/proxy/recipe, $(proxy_recipe), recipe2))
+$(eval $(call m.in/proxy/recipe, $(proxy_recipe), recipe3))
+
+.PHONY: proxyme-1
+proxyme-1:
+	$(call recipe1, hello, world)
+
+.PHONY: proxyme-2
+proxyme-2:
+	$(recipe2)
+
+.PHONY: proxyme-3
+proxyme-3:
+	$(recipe3)

@@ -225,3 +225,107 @@ $(strip
 )
 endef
 $(eval $(call m.in/debug/trace/3, m.in/is_subdir))
+
+##
+# m.in/proxy(command, recipe)
+# Proxy a recipe through a proxy command.
+# This macro is a no-op when `command` is empty.
+# Warning, this recipe changes the overall recipe execution method of make,
+# but shouldn't introduce errors. Cf. implementation details.
+#
+# Arguments:
+#   command
+#     proxy command reading commands from stdin
+#   recipe
+#     recipe variable name
+#
+# Implementation:
+# The difficulty is that a recipe may be multi-line and that by default,
+# newlines are processed by make since it runs one shell per line. The
+# `\` does not help since we don't know the content of the recipe, so
+# there is no (simple) way to add `;\` at the end of line.
+# So the idea was to use a multi-line command, correctly receiving its
+# newlines to send it to stdin using the here-document redirection.
+# Here-doc redirection cannot be written in one line, newlines are
+# required.
+# The only solution found was to use the `.ONESHELL:` directive.
+#
+# This directive enables recipe execution in one shell instead of one
+# shell per line of recipe. The effect is global and cannot be local
+# to a single rule and recipe. When it appears anywhere in the
+# Makefile then **all** recipe lines **for each** target will be
+# provided to a single invocation of the shell `$(SHELL)`.
+#
+# The Pros:
+#   - Multi-line recipes are possible and newlines are processed by the shell.
+#     This makes possible the use of here-doc redirection which cannot be
+#     written in one line and need newlines to be correct. Cf. `m.in/proxy()`.
+#   - One shell process per recipe instead of one shell process per line of
+#     recipe.
+#
+# The Cons:
+#   - The shell must handle intermediate errors.
+#   - Make prints one command at a time, which is every lines of the recipe
+#     with `.ONESHELL` enabled. If the proxy command does not echo the commands
+#     it executes, linking error messages to their command can be more
+#     difficult.
+#
+# Shell flags are set to keep the default make behaviour of exiting on
+# error (i.e., `-e`).
+#
+define m.in/proxy/recipe =
+# implicit forwarding to m.in/proxy_ when proxy command set
+# submacro needed to avoid problem with newlines with `$(if)`.
+$(if $(strip $1),$(m.in/proxy/recipe_))
+endef
+define m.in/proxy/recipe_ =
+.ONESHELL:
+.SHELLFLAGS = -ec
+$(call m.in/debug/info, proxy $(m.in/argv/2) through $(firstword $(m.in/argv/1)))
+define $(m.in/argv/2) =
+$1 <<EOF
+$(value $(m.in/argv/2))
+EOF
+endef
+endef
+
+##
+# m.in/proxy/target(command, target-prefix?)
+# Create a new target which proxies make calls to a command throught its
+# command line.
+# The new target uses pattern matching (`%`) prefixed by `proxy-` by default
+# or argument `target-prefix` if provided.
+# This macro is a no-op when `command` is empty.
+#
+# Arguments:
+#   command
+#     proxy command reading commands from its last.
+#   target-prefix?
+#     prefix of the target pattern.
+#
+# Example:
+# Proxy any make target through docker:
+# ```
+# $(eval $(call m.in/proxy, docker run my-image, docker\:))
+# ```
+# This results in the target `docker:%` and matches targets like `make docker:all`
+# resulting in `docker run my-imake make all`.
+#
+# Usage:
+# This is an explicit way of proxying, while `m.in/proxy/recipe()` tries
+# to make it transparent and more selective at the recipe level.
+# In this case, you manually trigger the proxy.
+#
+# Implementation:
+# Use a single-line recipe to avoid `.ONESHELL:` as much as possible (but reading
+# from stdin instead of the command line would be a better/cleaner interface).
+# Use the built-in variable $(MAKE) to keep make flags.
+#
+define m.in/proxy/target =
+$(if $(strip $1),$(m.in/proxy/target_))
+endef
+define m.in/proxy/target_ =
+$(or $(strip $2),proxy-)%:
+	@echo "$$(call m.in/term/vfx/target, $$@)"
+	$(m.in/argv/1) $$(MAKE) $$*
+endef
