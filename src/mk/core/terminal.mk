@@ -1,24 +1,9 @@
 ##
 # Terminal Management.
-# Default settings.
+# Default settings. Enabled when stdout is a tty.
 # Requires terminfo.
 # \{
 #
-
-##
-# Colorized output.
-# Boolean.
-#
-# Example:
-#   ```
-#   > make
-#   colored output by default
-#
-#   > make m.in/term/color=
-#   uncolored output
-#   ```
-#
-m.in/term/color := $(shell [ $$(tput colors) -ge 8 ] && echo t)
 
 ##
 # Frequently used tags.
@@ -78,6 +63,23 @@ $(m.in/term/color/ired)$(m.in/argv/1)$(m.in/term/color/reset)
 endef
 ## \}
 
+ifdef TERM
+
+##
+# Colorized output.
+# Boolean.
+#
+# Example:
+#   ```
+#   > make
+#   colored output by default
+#
+#   > make m.in/term/color=
+#   uncolored output
+#   ```
+#
+m.in/term/color := $(shell [ $$(tput colors) -ge 8 ] && echo t)
+
 ##
 # ANSI colors.
 # \{
@@ -102,13 +104,14 @@ m.in/term/color/iwhite  = $(if $(m.in/term/color),$(m.in/term/color/esc/iwhite))
 
 m.in/term/color/reset   = $(if $(m.in/term/color),$(m.in/term/color/esc/reset))
 m.in/term/color/bold    = $(if $(m.in/term/color),$(m.in/term/color/esc/bold))
-m.in/term/color/blink    = $(if $(m.in/term/color),$(m.in/term/color/esc/blink))
+m.in/term/color/blink   = $(if $(m.in/term/color),$(m.in/term/color/esc/blink))
 ## \}
 
 ##
 # Escape sequences
 # \{
 #
+
 m.in/term/color/esc/black   := $(shell tput setaf 0)
 m.in/term/color/esc/red     := $(shell tput setaf 1)
 m.in/term/color/esc/green   := $(shell tput setaf 2)
@@ -133,3 +136,5 @@ m.in/term/color/esc/blink   := $(shell tput blink)
 ## \}
 
 ## \}
+
+endif # m.in/term/is_stdout_tty
