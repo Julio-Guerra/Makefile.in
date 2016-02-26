@@ -85,13 +85,32 @@ m.in/toolchain/go/goflags :=
 
 ##
 # m.in/toolchain/go/recipe/go/build(flags?)
-# Build a package. Flags may be optionally added for this recipe, along
+# Build packages. Flags may be optionally added for this recipe, along
 # with global flags `m.in/toolchain/go/goflags`.
 #
 define m.in/toolchain/go/recipe/build =
-$(m.in/toolchain/go/bin/go) build $(m.in/toolchain/go/goflags) -o $@ $1       \
+$(m.in/toolchain/go/bin/go) build $(m.in/toolchain/go/goflags) -o $@ $(strip $1) \
                             $(call m.in/transaction/implementations, $@)
 endef
+
+##
+# m.in/toolchain/go/recipe/go/test(flags?)
+# Test packages. Flags may be optionally added to the recipe, along
+# with global flags `m.in/toolchain/go/goflags`.
+#
+define m.in/toolchain/go/recipe/test =
+$(m.in/toolchain/go/bin/go) test $(m.in/toolchain/go/goflags) $(strip $1) \
+                            $(call m.in/transaction/implementations, $@)
+endef
+
+##
+# m.in/toolchain/go/recipe/go/tool(tool, args?)
+# Call a go tool command `tool` with given `args`.
+#
+define m.in/toolchain/go/recipe/tool =
+$(m.in/toolchain/go/bin/go) tool $(m.in/argv/1) $(strip $2)
+endef
+
 
 ## m.in/toolchain/go/recipe/*/clean
 m.in/toolchain/go/recipe/*/clean = $(m.in/toolchain/gnu/recipe/*/clean)
@@ -108,10 +127,32 @@ m.in/toolchain/go/recipe/*/distclean = $(m.in/toolchain/gnu/recipe/*/distclean)
 
 ##
 # m.in/toolchain/go/make_build(target, flags?)
+# Build a go package.
 #
 define m.in/toolchain/go/make_build =
 $(call make_explicit, $1, go, build, $2)
 $(call dependencies_abs, $$$$(m.in/global_dependencies))
+endef
+
+##
+# m.in/toolchain/go/make_test(target, flags?)
+# Create a phony target `target` which calls `go test` on current transaction's
+# implementations. Optional `go test` flags can be provided.
+#
+define m.in/toolchain/go/make_test =
+$(call make_phony, $(m.in/argv/1), go, test, $2)
+endef
+
+##
+# m.in/toolchain/go/make_tool(tool, args...?)
+# Call a go tool.
+#
+define m.in/toolchain/go/make_tool =
+$(call make_phony, $(m.in/argv/1),
+                   go,
+                   tool,
+                   $(m.in/argv/1),
+                   $2, $3, $4, $5, $6, $7, $8, $9, $(10), $(11))
 endef
 
 ## \}
