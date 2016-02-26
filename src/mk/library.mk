@@ -132,14 +132,13 @@ prerequisites_abs_tail = $(call m.in/prerequisites,tail, $(m.in/argv/1))
 
 ##
 # dependencies_abs(files[])
-# Add files the dependency list of current target transaction.
+# Add files to the dependency list of current target transaction.
 # Any file impacting the generation of current transaction should be listed
 # in target's dependencies.
 #
 # Arguments:
 #  files[]
 #    List of target dependencies.
-#
 #
 dependencies_abs = $(m.in/dependencies)
 
