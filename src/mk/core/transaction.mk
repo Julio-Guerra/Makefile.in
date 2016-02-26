@@ -225,6 +225,4 @@ endef
 $(eval $(call m.in/debug/trace/2, m.in/transactions/push     \
                                   m.in/transactions/pop))
 
-m.in/transaction = $(error nononono)
-
 ## \}
