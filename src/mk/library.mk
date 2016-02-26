@@ -52,6 +52,32 @@ CWD = $(m.in/cwd)
 CBD = ./$(m.in/cbd)
 
 ##
+# make_phony(target, toolchain?, recipe, args?)
+# Define a new phony target explicitly using `recipe` with given optional
+# `args` of `toolchain` and create a new transaction.
+# A phony target is not tracked by distclean nor added as dependency of the
+# default `all` target. Such targets should be called manually.
+#
+# Arguments:
+#  target
+#    Phony target.
+#  toolchain?
+#    Toolchain identifier used to select the recipe.
+#  recipe
+#    Target creation recipe.
+#  args...?
+#    Recipe arguments. Optional according to the recipe specification.
+#
+define make_phony =
+$(call m.in/transaction/create, $(m.in/argv/1))
+.PHONY: $(m.in/argv/1)
+$(call m.in/rule, $(m.in/argv/1):,
+                  $2,
+                  $(m.in/argv/3),
+                  $4, $5, $6, $7, $8, $9, $(10), $(11), $(12), $(13))
+endef
+
+##
 # make_implicit(file)
 # Define a new target to generate `file` and start a new transaction.
 # The underlying rule is selected based on the file extension - a language
