@@ -16,7 +16,7 @@ m.in/toolchain/docker/bin/docker := docker
 ##
 # m.in/toolchain/docker/recipe/build(dockerfile, tag, flags?)
 # Remove the existing tag if it exists and create a docker image with
-# given Dockerfile and flags. The build context is the project's root
+# given Dockerfile and flags. The build context is the dockerfile's
 # directory. To be able to depend on this target, a dummy file is
 # created in the current build directory, under the same directory
 # tree as the Dockerfile.
@@ -27,7 +27,7 @@ $(m.in/toolchain/docker/bin/docker) build \
   -t $(m.in/argv/2)                       \
   -f $(m.in/argv/1)                       \
   $(strip $3)                             \
-  $(m.in/root)
+  $(dir $(m.in/argv/1))
 $(if $(m.in/out_of_source), $(call m.in/mkdir, $(@D)))
 touch $@
 endef
