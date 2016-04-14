@@ -74,7 +74,7 @@ $(call make_explicit, $(dir $(m.in/argv/1))$(m.in/argv/2),
                       $(m.in/argv/2),
                       $3)
 $(call dependencies_abs, $(m.in/argv/1) $$$$(m.in/global_dependencies))
-m.in/clean += $(dir $(m.in/argv/1))$(m.in/argv/2)
+m.in/clean/force += $(dir $(m.in/argv/1))$(m.in/argv/2)
 endef
 
 ## \}

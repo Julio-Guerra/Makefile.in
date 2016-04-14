@@ -179,7 +179,7 @@ m.in/toolchain/gnu/ldflags :=
 # m.in/toolchain/gnu/recipe/*/clean
 #
 define m.in/toolchain/gnu/recipe/*/clean =
-$(m.in/toolchain/gnu/bin/rm) -rf $(m.in/clean)
+$(m.in/toolchain/gnu/bin/rm) -rf $(m.in/clean) $(m.in/clean/force)
 $(m.in/toolchain/gnu/bin/find) . -name '*~' \
   -exec $(m.in/toolchain/gnu/bin/rm) -f {} +
 endef
