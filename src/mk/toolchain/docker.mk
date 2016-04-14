@@ -40,6 +40,15 @@ define m.in/toolchain/docker/recipe/run =
 $(m.in/toolchain/docker/bin/docker) run $(strip $2) $(m.in/argv/1) $(strip $3)
 endef
 
+##
+# m.in/toolchain/docker/recipe/is_container_running(container)
+# Exit status is 0 (true) when given `container` state is running.
+#
+define m.in/toolchain/docker/recipe/is_container_running =
+[ "$$($(m.in/toolchain/docker/bin/docker) inspect -f '{{.State.Running}}' $(m.in/argv/1) 2>/dev/null)" \
+  = true ]
+endef
+
 ## \}
 
 ##
@@ -81,8 +90,7 @@ endef
 # Return True (non-empty string) when given `container` state is running.
 #
 define m.in/toolchain/docker/is_container_running =
-$(shell [ "$$($(m.in/toolchain/docker/bin/docker) inspect -f '{{.State.Running}}' $(m.in/argv/1) 2>/dev/null)" \
-  = true ] && echo t)
+$(shell $(m.in/toolchain/docker/recipe/is_container_running) && echo t)
 endef
 
 ##
