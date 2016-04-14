@@ -114,8 +114,21 @@ endef
 # with global flags `m.in/toolchain/go/goflags`.
 #
 define m.in/toolchain/go/recipe/test =
-$(m.in/toolchain/go/bin/go) test $(m.in/toolchain/go/goflags) $(strip $1) \
+$(m.in/toolchain/go/bin/go-test) $(m.in/toolchain/go/goflags) $(strip $1) \
                             $(call m.in/transaction/implementations, $@)
+endef
+
+##
+# m.in/toolchain/go/recipe/go/install(flags?)
+# Install packages. Flags may be optionally added to the recipe, along
+# with global flags `m.in/toolchain/go/goflags`. The file is also touched
+# so that its creation time (which is tracked by make) is updated because
+# go tools don't.
+#
+define m.in/toolchain/go/recipe/install =
+$(m.in/toolchain/go/bin/go-install) $(m.in/toolchain/go/goflags) $(strip $1) \
+                            $(call m.in/transaction/implementations, $@) &&  \
+touch $@
 endef
 
 ##
@@ -146,6 +159,15 @@ m.in/toolchain/go/recipe/*/distclean = $(m.in/toolchain/gnu/recipe/*/distclean)
 #
 define m.in/toolchain/go/make_build =
 $(call make_explicit, $1, go, build, $2)
+$(call dependencies_abs, $$$$(m.in/global_dependencies))
+endef
+
+##
+# m.in/toolchain/go/make_install(target, flags?)
+# Install a go package.
+#
+define m.in/toolchain/go/make_install =
+$(call make_explicit, $1, go, install, $2)
 $(call dependencies_abs, $$$$(m.in/global_dependencies))
 endef
 
