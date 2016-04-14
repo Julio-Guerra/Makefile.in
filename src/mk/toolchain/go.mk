@@ -45,7 +45,7 @@ endef
 
 
 ##
-# GNU Toolchain Program
+# Go Toolchain Programs
 # To be completed as soon as needed.
 # \{
 #
@@ -55,6 +55,21 @@ define m.in/toolchain/go/bin/go =
 $(call m.in/toolchain/go/program, $(m.in/toolchain/go/program/go))
 endef
 m.in/toolchain/go/program/go   := go
+
+## m.in/toolchain/go/bin/go-test
+define m.in/toolchain/go/bin/go-test =
+$(m.in/toolchain/go/bin/go) test
+endef
+
+## m.in/toolchain/go/bin/go-build
+define m.in/toolchain/go/bin/go-build =
+$(m.in/toolchain/go/bin/go) build
+endef
+
+## m.in/toolchain/go/bin/go-install
+define m.in/toolchain/go/bin/go-install =
+$(m.in/toolchain/go/bin/go) install
+endef
 
 ## \}
 
@@ -89,7 +104,7 @@ m.in/toolchain/go/goflags :=
 # with global flags `m.in/toolchain/go/goflags`.
 #
 define m.in/toolchain/go/recipe/build =
-$(m.in/toolchain/go/bin/go) build $(m.in/toolchain/go/goflags) -o $@ $(strip $1) \
+$(m.in/toolchain/go/bin/go-build) $(m.in/toolchain/go/goflags) -o $@ $(strip $1) \
                             $(call m.in/transaction/implementations, $@)
 endef
 
