@@ -22,7 +22,9 @@ m.in/toolchain/docker/bin/docker := docker
 # tree as the Dockerfile.
 #
 define m.in/toolchain/docker/recipe/build =
-test -f $@ && ( $(m.in/toolchain/docker/bin/docker) rmi -f $(m.in/argv/2) || true ) # do not fail
+$(call m.in/toolchain/docker/recipe/is_container_running, $(m.in/argv/2))    \
+  && $(m.in/toolchain/docker/bin/docker) rm --force $(m.in/argv/2)
+test -f $@ && ( $(m.in/toolchain/docker/bin/docker) rmi --force  --no-prune $(m.in/argv/2) || true ) # do not fail
 $(m.in/toolchain/docker/bin/docker) build \
   -t $(m.in/argv/2)                       \
   -f $(m.in/argv/1)                       \
