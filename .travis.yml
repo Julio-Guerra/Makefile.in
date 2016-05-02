@@ -1,4 +1,12 @@
-language: c
-script: 
-  - make --version
-  - make test
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build --tag fj/m.in test/Dockerfile
+  - docker run --name fj/m.in fj/m.in sh
+
+script:
+  - docker exec fj/m.in make --version
+  - docker exec fj/m.in make test
