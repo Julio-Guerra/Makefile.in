@@ -5,7 +5,7 @@ services:
 
 before_install:
   - docker build --tag dev --file test/Dockerfile .
-  - docker run --name dev dev sh
+  - docker run --name dev --detach --interactive dev sh
 
 script:
   - docker exec dev make --version
