@@ -1,2 +1,2 @@
 FROM alpine
-RUN apk add --update make && rm -rf /var/cache/apk/*
+RUN apk add --update make bash && rm -rf /var/cache/apk/*
