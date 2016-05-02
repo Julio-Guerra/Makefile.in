@@ -5,7 +5,7 @@ services:
 
 before_install:
   - docker build --tag dev --file test/Dockerfile .
-  - docker run --name dev -d -i -v $PWD -w $PWD dev sh
+  - docker run --name dev -d -i -v $PWD:$PWD -w $PWD dev sh
 
 script:
   - docker exec dev make --version
