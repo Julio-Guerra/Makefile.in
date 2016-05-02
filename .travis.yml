@@ -9,4 +9,4 @@ before_install:
 
 script:
   - docker exec dev make --version
-  - docker exec dev make test
+  - docker exec dev make -k test
