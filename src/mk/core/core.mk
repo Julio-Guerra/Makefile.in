@@ -166,6 +166,18 @@ m.in/ignore_dynamic_dependencies := clean distclean
 m.in/global_dependencies = $(filter-out %.d, $(MAKEFILE_LIST))
 
 ##
+# m.in/clean
+# Default clean list.
+#
+m.in/clean = .m.in
+
+##
+# m.in/clean
+# Default distclean list.
+#
+m.in/distclean =
+
+##
 # m.in/make_implicit(file)
 # See `make_implicit()`.
 #

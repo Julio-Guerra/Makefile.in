@@ -13,6 +13,8 @@ m.in/toolchain/docker/bin/docker := docker
 # \{
 #
 
+m.in/toolchain/docker/recipe/*/clean = $(m.in/toolchain/gnu/recipe/*/clean)
+
 ##
 # m.in/toolchain/docker/recipe/build(dockerfile, tag, flags?)
 # Remove the existing tag if it exists and create a docker image with
@@ -22,9 +24,13 @@ m.in/toolchain/docker/bin/docker := docker
 # tree as the Dockerfile.
 #
 define m.in/toolchain/docker/recipe/build =
-$(call m.in/toolchain/docker/recipe/is_container_running, $(m.in/argv/2))    \
-  && $(m.in/toolchain/docker/bin/docker) rm --force $(m.in/argv/2)
-test -f $@ && ( $(m.in/toolchain/docker/bin/docker) rmi --force  --no-prune $(m.in/argv/2) || true ) # do not fail
+if $(call m.in/toolchain/docker/recipe/is_container_running, $(m.in/argv/2)); then    \
+  $(m.in/toolchain/docker/bin/docker) rm --force $(m.in/argv/2); \
+fi
+if test -f $@; then \
+  $(m.in/toolchain/docker/bin/docker) rmi --force  --no-prune $(m.in/argv/2); \
+fi
+$(call m.in/mkdir, $(@D))
 $(m.in/toolchain/docker/bin/docker) build \
   -t $(m.in/argv/2)                       \
   -f $(m.in/argv/1)                       \
@@ -58,6 +64,8 @@ endef
 # \{
 #
 
+m.in/toolchain/docker/mkdir = $(m.in/toolchain/gnu/mkdir)
+
 ##
 # m.in/toolchain/docker/make_build(dockerfile, tag, flags?)
 #
@@ -67,16 +75,23 @@ endef
 # track other targets depending on this one.
 #
 define m.in/toolchain/docker/make_build =
-$(call make_explicit, $(dir $(m.in/argv/1))$(m.in/argv/2),
+$(call make_explicit, $(call m.in/toolchain/docker/tracker, $(m.in/argv/2)),
                       docker,
                       build,
                       $(m.in/argv/1),
                       $(m.in/argv/2),
                       $3)
 $(call dependencies_abs, $(m.in/argv/1) $$$$(m.in/global_dependencies))
-m.in/clean/force += $(dir $(m.in/argv/1))$(m.in/argv/2)
+m.in/clean/force += $(call m.in/toolchain/docker/tracker, $(m.in/argv/2))
 endef
 
+##
+# m.in/toolchain/docker/tracker(tag)
+# Return a tracker filename to track the build of a Dockerfile.
+#
+define m.in/toolchain/docker/tracker =
+.m.in/tracker/docker/$(subst /,-,$(subst :,-,$(m.in/argv/1)))
+endef
 ## \}
 
 ##
