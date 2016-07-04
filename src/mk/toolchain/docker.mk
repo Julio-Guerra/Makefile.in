@@ -14,6 +14,7 @@ m.in/toolchain/docker/bin/docker := docker
 #
 
 m.in/toolchain/docker/recipe/*/clean = $(m.in/toolchain/gnu/recipe/*/clean)
+m.in/toolchain/docker/recipe/*/distclean = $(m.in/toolchain/gnu/recipe/*/distclean)
 
 ##
 # m.in/toolchain/docker/recipe/build(dockerfile, tag, flags?)
@@ -24,28 +25,30 @@ m.in/toolchain/docker/recipe/*/clean = $(m.in/toolchain/gnu/recipe/*/clean)
 # tree as the Dockerfile.
 #
 define m.in/toolchain/docker/recipe/build =
-if $(call m.in/toolchain/docker/recipe/is_container_running, $(m.in/argv/2)); then    \
-  $(m.in/toolchain/docker/bin/docker) rm --force $(m.in/argv/2); \
-fi
 if test -f $@; then \
   $(m.in/toolchain/docker/bin/docker) rmi --force  --no-prune $(m.in/argv/2); \
 fi
-$(call m.in/mkdir, $(@D))
 $(m.in/toolchain/docker/bin/docker) build \
   -t $(m.in/argv/2)                       \
   -f $(m.in/argv/1)                       \
   $(strip $3)                             \
   $(dir $(m.in/argv/1))
 $(if $(m.in/out_of_source), $(call m.in/mkdir, $(@D)))
+$(call m.in/mkdir, $(@D))
 touch $@
 endef
 
 ##
-# m.in/toolchain/docker/recipe/run(image, dockerflags?, command?)
-# Run a docker image with given optional dockerflags and command.
+# m.in/toolchain/docker/recipe/run(image, name, flags?, command?)
+# Run a docker image with given optional flags and command.
 #
 define m.in/toolchain/docker/recipe/run =
-$(m.in/toolchain/docker/bin/docker) run $(strip $2) $(m.in/argv/1) $(strip $3)
+if $(call m.in/toolchain/docker/recipe/is_container_running, $(m.in/argv/2)); then    \
+  $(m.in/toolchain/docker/bin/docker) rm --force $(m.in/argv/2); \
+fi
+$(m.in/toolchain/docker/bin/docker) run --name $(m.in/argv/2) $(strip $3) $(m.in/argv/1) $(strip $4)
+$(call m.in/mkdir, $(dir $(call m.in/toolchain/docker/run/tracker, $(m.in/argv/1))))
+touch $(call m.in/toolchain/docker/run/tracker, $(m.in/argv/1))
 endef
 
 ##
@@ -55,6 +58,14 @@ endef
 define m.in/toolchain/docker/recipe/is_container_running =
 [ "$$($(m.in/toolchain/docker/bin/docker) inspect -f '{{.State.Running}}' $(m.in/argv/1) 2>/dev/null)" \
   = true ]
+endef
+
+##
+# m.in/toolchain/docker/recipe/container_exists(container)
+# Exit status is 0 (true) when given `container` exists.
+#
+define m.in/toolchain/docker/recipe/container_exists =
+$(m.in/toolchain/docker/bin/docker) inspect $(m.in/argv/1) >&- 2>&-
 endef
 
 ## \}
@@ -70,28 +81,58 @@ m.in/toolchain/docker/mkdir = $(m.in/toolchain/gnu/mkdir)
 # m.in/toolchain/docker/make_build(dockerfile, tag, flags?)
 #
 # Implementation:
-# This is an empty target because docker does not create something make can
-# track. Use a dummy file to avoid unwanted builds and allow make to correctly
+# Use a dummy file to avoid unwanted builds and allow make to correctly
 # track other targets depending on this one.
 #
 define m.in/toolchain/docker/make_build =
-$(call make_explicit, $(call m.in/toolchain/docker/tracker, $(m.in/argv/2)),
+$(call make_explicit, $(call m.in/toolchain/docker/build/tracker, $(m.in/argv/2)),
                       docker,
                       build,
                       $(m.in/argv/1),
                       $(m.in/argv/2),
                       $3)
 $(call dependencies_abs, $(m.in/argv/1) $$$$(m.in/global_dependencies))
-m.in/clean/force += $(call m.in/toolchain/docker/tracker, $(m.in/argv/2))
 endef
 
 ##
-# m.in/toolchain/docker/tracker(tag)
+# m.in/toolchain/docker/make_run(image, name, flags?, command?)
+# Run a docker image.
+#
+define m.in/toolchain/docker/make_run =
+$(call make_explicit, $(call m.in/toolchain/docker/run/tracker, $(m.in/argv/1)),
+                      docker,
+                      run,
+                      $(m.in/argv/1),
+                      $(m.in/argv/2),
+                      $3,
+                      $4)
+$(call dependencies_abs, $$$$(m.in/global_dependencies))
+endef
+
+##
+# m.in/toolchain/docker/run/tracker(image)
+# Return a tracker filename to track the run of an image.
+#
+define m.in/toolchain/docker/run/tracker =
+$(call m.in/toolchain/docker/tracker, run, $(m.in/argv/1))
+endef
+
+##
+# m.in/toolchain/docker/build/tracker(tag)
 # Return a tracker filename to track the build of a Dockerfile.
 #
-define m.in/toolchain/docker/tracker =
-.m.in/tracker/docker/$(subst /,-,$(subst :,-,$(m.in/argv/1)))
+define m.in/toolchain/docker/build/tracker =
+$(call m.in/toolchain/docker/tracker, build, $(m.in/argv/1))
 endef
+
+##
+# m.in/toolchain/docker/tracker(name)
+# Return a tracker filename to track the docker command.
+#
+define m.in/toolchain/docker/tracker =
+$(call m.in/tracker, $(m.in/argv/1)/$(subst /,-,$(subst :,-,$(m.in/argv/2))))
+endef
+
 ## \}
 
 ##
@@ -109,6 +150,15 @@ endef
 define m.in/toolchain/docker/is_container_running =
 $(shell $(m.in/toolchain/docker/recipe/is_container_running) && echo t)
 endef
+
+##
+# m.in/toolchain/docker/container_exists(container)
+# Return True (non-empty string) when given `container` exists.
+#
+define m.in/toolchain/docker/container_exists =
+$(shell $(m.in/toolchain/docker/recipe/inspect) && echo t)
+endef
+
 
 ##
 # m.in/toolchain/docker/dockerize/recipe(command, recipe)

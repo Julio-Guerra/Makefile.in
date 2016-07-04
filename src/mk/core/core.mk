@@ -178,6 +178,15 @@ m.in/clean = .m.in
 m.in/distclean =
 
 ##
+# m.in/tracker(name)
+# Return a tracker filename to track commands whose result is not a file
+# that can tracked by make.
+#
+define m.in/tracker =
+.m.in/tracker/$(m.in/argv/1)
+endef
+
+##
 # m.in/make_implicit(file)
 # See `make_implicit()`.
 #
