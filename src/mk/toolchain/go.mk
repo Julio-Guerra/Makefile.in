@@ -4,7 +4,6 @@
 # \{
 #
 
-
 ##
 # m.in/toolchain/go/program-prefix
 # Prefix of programs of the Go toolchain.

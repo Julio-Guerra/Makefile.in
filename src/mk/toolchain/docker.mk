@@ -17,7 +17,7 @@ m.in/toolchain/docker/recipe/*/clean = $(m.in/toolchain/gnu/recipe/*/clean)
 m.in/toolchain/docker/recipe/*/distclean = $(m.in/toolchain/gnu/recipe/*/distclean)
 
 ##
-# m.in/toolchain/docker/recipe/build(dockerfile, tag, flags?)
+# m.in/toolchain/docker/recipe/build(dockerfile, tag, context, flags?)
 # Remove the existing tag if it exists and create a docker image with
 # given Dockerfile and flags. The build context is the dockerfile's
 # directory. To be able to depend on this target, a dummy file is
@@ -31,8 +31,8 @@ fi
 $(m.in/toolchain/docker/bin/docker) build \
   -t $(m.in/argv/2)                       \
   -f $(m.in/argv/1)                       \
-  $(strip $3)                             \
-  $(dir $(m.in/argv/1))
+  $(strip $4)                             \
+  $(m.in/argv/3)
 $(if $(m.in/out_of_source), $(call m.in/mkdir, $(@D)))
 $(call m.in/mkdir, $(@D))
 touch $@
@@ -178,7 +178,7 @@ endef
 # Proxy make targets through a (supposedly) docker command.
 # The resulting target prefix is `docker:` by default or `target-prefix`
 # argument when provided.
-# Cf. `m.in/proxy/recipe()` for more details.
+# Cf. `m.in/proxy/target()` for more details.
 #
 define m.in/toolchain/docker/dockerize/target =
 $(call m.in/proxy/target, $(m.in/argv/1), $(or $(strip $2),docker\:))
