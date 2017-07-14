@@ -9,6 +9,11 @@
 m.in/toolchain/docker/bin/docker := docker
 
 ##
+# Toolchain's mkdir
+#
+m.in/toolchain/go/mkdir = $(m.in/toolchain/gnu/mkdir)
+
+##
 # Toolchain Recipes
 # \{
 #
@@ -35,7 +40,7 @@ $(m.in/toolchain/docker/bin/docker) build \
   $(m.in/argv/3)
 $(if $(m.in/out_of_source), $(call m.in/mkdir, $(@D)))
 $(call m.in/mkdir, $(@D))
-touch $@
+touch $(call m.in/toolchain/docker/build/tracker, $(m.in/argv/2))
 endef
 
 ##
@@ -43,12 +48,12 @@ endef
 # Run a docker image with given optional flags and command.
 #
 define m.in/toolchain/docker/recipe/run =
-if $(call m.in/toolchain/docker/recipe/is_container_running, $(m.in/argv/2)); then    \
+if $(call m.in/toolchain/docker/recipe/is_container_running, $(m.in/argv/2)); then \
   $(m.in/toolchain/docker/bin/docker) rm --force $(m.in/argv/2); \
 fi
 $(m.in/toolchain/docker/bin/docker) run --name $(m.in/argv/2) $(strip $3) $(m.in/argv/1) $(strip $4)
-$(call m.in/mkdir, $(dir $(call m.in/toolchain/docker/run/tracker, $(m.in/argv/1))))
-touch $(call m.in/toolchain/docker/run/tracker, $(m.in/argv/1))
+$(call m.in/mkdir, $(dir $(call m.in/toolchain/docker/run/tracker, $(m.in/argv/1), $(m.in/argv/2))))
+touch $(call m.in/toolchain/docker/run/tracker, $(m.in/argv/1), $(m.in/argv/2))
 endef
 
 ##
@@ -99,7 +104,7 @@ endef
 # Run a docker image.
 #
 define m.in/toolchain/docker/make_run =
-$(call make_explicit, $(call m.in/toolchain/docker/run/tracker, $(m.in/argv/1)),
+$(call make_explicit, $(call m.in/toolchain/docker/run/tracker, $(1), $(2)),
                       docker,
                       run,
                       $(m.in/argv/1),
@@ -110,11 +115,11 @@ $(call dependencies_abs, $$$$(m.in/global_dependencies))
 endef
 
 ##
-# m.in/toolchain/docker/run/tracker(image)
+# m.in/toolchain/docker/run/tracker(image, name)
 # Return a tracker filename to track the run of an image.
 #
 define m.in/toolchain/docker/run/tracker =
-$(call m.in/toolchain/docker/tracker, run, $(m.in/argv/1))
+$(call m.in/toolchain/docker/tracker, run, $(m.in/argv/1)/$(m.in/argv/2))
 endef
 
 ##
@@ -126,11 +131,11 @@ $(call m.in/toolchain/docker/tracker, build, $(m.in/argv/1))
 endef
 
 ##
-# m.in/toolchain/docker/tracker(name)
+# m.in/toolchain/docker/tracker(command, name)
 # Return a tracker filename to track the docker command.
 #
 define m.in/toolchain/docker/tracker =
-$(call m.in/tracker, $(m.in/argv/1)/$(subst /,-,$(subst :,-,$(m.in/argv/2))))
+$(call m.in/tracker, docker/$(m.in/argv/1)/$(subst :,-,$(m.in/argv/2)))
 endef
 
 ## \}
