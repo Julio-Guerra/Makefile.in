@@ -98,12 +98,12 @@ m.in/toolchain/go/goflags :=
 #
 
 ##
-# m.in/toolchain/go/recipe/go/build(flags?)
+# m.in/toolchain/go/recipe/build(flags?)
 # Build packages. Flags may be optionally added for this recipe, along
 # with global flags `m.in/toolchain/go/goflags`.
 #
 define m.in/toolchain/go/recipe/build =
-$(m.in/toolchain/go/bin/go-build) $(m.in/toolchain/go/goflags) -o $@ $(strip $1) \
+$(m.in/toolchain/go/bin/go-build) $(m.in/toolchain/go/goflags) -i -o $@ $(strip $1) \
                             $(call m.in/transaction/implementations, $@)
 endef
 
