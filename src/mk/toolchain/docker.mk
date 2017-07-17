@@ -48,7 +48,7 @@ endef
 # Run a docker image with given optional flags and command.
 #
 define m.in/toolchain/docker/recipe/run =
-if $(call m.in/toolchain/docker/recipe/is_container_running, $(m.in/argv/2)); then \
+if $(call m.in/toolchain/docker/recipe/is_container_created, $(m.in/argv/2)); then \
   $(m.in/toolchain/docker/bin/docker) rm --force $(m.in/argv/2); \
 fi
 $(m.in/toolchain/docker/bin/docker) run --name $(m.in/argv/2) $(strip $3) $(m.in/argv/1) $(strip $4)
@@ -63,6 +63,14 @@ endef
 define m.in/toolchain/docker/recipe/is_container_running =
 [ "$$($(m.in/toolchain/docker/bin/docker) inspect -f '{{.State.Running}}' $(m.in/argv/1) 2>/dev/null)" \
   = true ]
+endef
+
+##
+# m.in/toolchain/docker/recipe/is_container_created(container)
+# Exit status is 0 (true) when given `container` exists.
+#
+define m.in/toolchain/docker/recipe/is_container_created =
+$(m.in/toolchain/docker/bin/docker) inspect $(m.in/argv/1) 1>/dev/null 2>/dev/null
 endef
 
 ##
@@ -157,13 +165,12 @@ $(shell $(m.in/toolchain/docker/recipe/is_container_running) && echo t)
 endef
 
 ##
-# m.in/toolchain/docker/container_exists(container)
+# m.in/toolchain/docker/is_container_created(container)
 # Return True (non-empty string) when given `container` exists.
 #
-define m.in/toolchain/docker/container_exists =
-$(shell $(m.in/toolchain/docker/recipe/inspect) && echo t)
+define m.in/toolchain/docker/is_container_created =
+$(shell $(m.in/toolchain/docker/recipe/is_container_created) && echo t)
 endef
-
 
 ##
 # m.in/toolchain/docker/dockerize/recipe(command, recipe)
